@@ -93,7 +93,8 @@ def fisheye_to_pinhole(img, k, pinhole, fisheye=None):
     """
     if fisheye is None:
         fisheye = _default_fisheye_params(img.shape)
-    f_fish = float(fisheye.get("f"))
+    f_fish_x = float(fisheye.get("fx"))
+    f_fish_y = float(fisheye.get("fy"))
     cx_f = float(fisheye.get("cx"))
     cy_f = float(fisheye.get("cy"))
 
@@ -116,7 +117,8 @@ def fisheye_to_pinhole(img, k, pinhole, fisheye=None):
     theta = np.arctan(rho)  # angle from optical axis
 
     # Map θ to fisheye radius using k
-    r_fish = f_fish * (np.maximum(theta, 0.0) ** k)  # r = f * θ^k
+    r_fish_x = f_fish_x * (np.maximum(theta, 0.0) ** k)  # r = f * θ^k
+    r_fish_y = f_fish_y * (np.maximum(theta, 0.0) ** k)  # r = f * θ^k
 
     # Direction on fisheye image plane (assume same optical axis; no rotation)
     # For rho=0, set unit direction arbitrary (no effect since r_fish=0)
@@ -124,8 +126,8 @@ def fisheye_to_pinhole(img, k, pinhole, fisheye=None):
     dir_x = np.where(rho > eps, x / (rho + eps), 0.0)
     dir_y = np.where(rho > eps, y / (rho + eps), 0.0)
 
-    map_x = dir_x * r_fish + cx_f
-    map_y = dir_y * r_fish + cy_f
+    map_x = dir_x * r_fish_x + cx_f
+    map_y = dir_y * r_fish_y + cy_f
 
     # Sample from fisheye source into pinhole target
     out = cv2.remap(
